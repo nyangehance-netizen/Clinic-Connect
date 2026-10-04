@@ -1,0 +1,22 @@
+{
+  "name": "Clinic Connect",
+  "short_name": "Clinic Connect",
+  "description": "Find a hospital or polyclinic and request treatment.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3F6F5",
+  "theme_color": "#0F2420",
+  "categories": ["medical", "health"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "My requests", "url": "/#/mine", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Clinic desk", "url": "/#/desk", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

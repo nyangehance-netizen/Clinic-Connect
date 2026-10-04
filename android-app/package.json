@@ -1,0 +1,16 @@
+{
+  "name": "clinic-connect-android",
+  "private": true,
+  "description": "Android wrapper (Capacitor) that opens the hosted Clinic Connect web app as a phone app.",
+  "scripts": {
+    "configure": "node configure.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}

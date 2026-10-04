@@ -1,0 +1,25 @@
+# One-click preview hosting on Render (render.com): New → Blueprint → pick this repo.
+# The free plan wipes the database when the service restarts, so use it for previews only.
+services:
+  - type: web
+    name: clinic-connect
+    runtime: node
+    plan: free
+    buildCommand: "true"
+    startCommand: node --disable-warning=ExperimentalWarning scripts/seed-demo.js && node --disable-warning=ExperimentalWarning src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22.13.0"
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: TZ
+        value: Africa/Dar_es_Salaam
+      - key: DEFAULT_COUNTRY_CODE
+        value: "255"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: SMS_PROVIDER
+        value: console

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Clinic Connect</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #F3F6F5; color: #0F2420; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; text-align: center }
+  @media (prefers-color-scheme: dark) { body { background: #0D1614; color: #E4EEEB } p { color: #9DB0AB } }
+  h1 { font-size: 24px; margin: 0 0 8px } p { margin: 0 0 20px; color: #4F625E; line-height: 1.5 }
+  button { min-height: 48px; padding: 0 22px; border: 0; border-radius: 12px; background: #0B6B5A; color: #fff; font: inherit; font-weight: 700 }
+</style></head>
+<body>
+  <main>
+    <h1>Can’t reach Clinic Connect</h1>
+    <p>Check your internet connection. If the service was asleep, it can take up to a minute to wake up.</p>
+    <button onclick="history.length > 1 ? history.back() : location.reload()">Try again</button>
+  </main>
+</body>
+</html>

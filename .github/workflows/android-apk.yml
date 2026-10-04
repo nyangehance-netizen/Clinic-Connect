@@ -1,0 +1,81 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: "The https:// address where Clinic Connect is hosted (leave empty to use the APP_URL variable)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test the server
+        run: npm test
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Choose the address the app opens
+        id: url
+        env:
+          INPUT_URL: ${{ github.event.inputs.app_url }}
+          VAR_URL: ${{ vars.APP_URL }}
+        run: |
+          URL="$INPUT_URL"
+          if [ -z "$URL" ]; then URL="$VAR_URL"; fi
+          if [ -z "$URL" ]; then URL="https://clinic-connect.onrender.com"; echo "::warning::APP_URL is not set, using $URL. Set the APP_URL repository variable to your real address."; fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build the APK
+        working-directory: android-app
+        env:
+          APP_URL: ${{ steps.url.outputs.url }}
+        run: |
+          npm install --no-audit --no-fund
+          node configure.mjs
+          npx cap add android
+          npx capacitor-assets generate --android
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/clinic-connect.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clinic-connect-apk
+          path: clinic-connect.apk
+
+      - name: Publish the APK as a download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Clinic Connect for Android (build ${{ github.run_number }})
+          make_latest: true
+          files: clinic-connect.apk
+          body: |
+            Open this page on your Android phone and tap **clinic-connect.apk** to download it.
+            When Android asks, allow your browser to install unknown apps, then tap **Install**.
+
+            This build opens: ${{ steps.url.outputs.url }}

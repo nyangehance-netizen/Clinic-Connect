@@ -122,7 +122,12 @@ All endpoints are under `/api`. Signed-in calls send `Authorization: Bearer <tok
 
 ## Android app (APK)
 
-Every push to `main` builds an Android APK on GitHub automatically (`.github/workflows/android-apk.yml`). The APK is a thin app shell that opens your hosted Clinic Connect, so web updates reach phones without a new APK.
+Every push to `main` builds an Android APK on GitHub automatically (`.github/workflows/android-apk.yml`), in one of two modes:
+
+- **Preview mode** (no `APP_URL` set): the whole app is inside the APK and keeps its data on the phone. It works with no hosting. To try the clinic side, sign in with the demo accounts shown on the sign-in screen (admin `0700000001` / `admin123`, clinic staff `0700000002` / `staff123`). Use it for demos only.
+- **Live mode** (`APP_URL` set): the APK opens your hosted server, so everyone shares the same data, and web updates reach phones without a new APK.
+
+To switch to live mode:
 
 1. Host the web app first (see "Quickest free preview" above) and copy its `https://` address.
 2. On GitHub, open **Settings → Secrets and variables → Actions → Variables** and add `APP_URL` with that address.

@@ -149,6 +149,7 @@ tr.sel td { background: var(--accent-soft) }
 .kv .wide { grid-column: 1 / -1 }
 .eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px }
 .empty { padding: 32px 20px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center }
+.preview-note { border-color: var(--info); background: var(--info-soft) }
 .install { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; border-color: var(--accent) }
 .auth { max-width: 420px; width: 100%; margin: 24px auto 0 }
 

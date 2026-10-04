@@ -50,7 +50,17 @@ function makeStorage() {
   };
 }
 
+const PREVIEW = window.CC_PREVIEW === true;
+let previewMod = null;
+
 async function api(path, { method = 'GET', body } = {}) {
+  if (PREVIEW) {
+    previewMod = previewMod || await import('./preview-api.js');
+    const out = previewMod.previewApi(path, { method, body: body || {} }, S.token);
+    if (out.status === 401 && S.token) signOut(true);
+    if (out.status >= 400) throw new Error(out.data.error || 'Something went wrong. Try again.');
+    return out.data;
+  }
   const headers = { Accept: 'application/json' };
   if (body) headers['Content-Type'] = 'application/json';
   if (S.token) headers.Authorization = 'Bearer ' + S.token;
@@ -153,7 +163,7 @@ function viewFind() {
     <div class="field"><label for="q" class="label">Search services or facilities</label><div class="search">${ICON.search}
     <input id="q" data-d="_.q" value="${esc(S.q)}" placeholder="e.g. dentist, blood test, antenatal" autocomplete="off"></div></div>
     <div class="chips" role="group" aria-label="Filter by type of care">${CATS.map((c) => `<button class="chip" data-a="cat" data-v="${c[0]}" aria-pressed="${S.cat === c[0]}">${c[1]}</button>`).join('')}</div>`;
-  h = installBanner() + h;
+  h = installBanner() + (PREVIEW && !S.me ? '<p class="card pad small preview-note"><b>Preview mode.</b> Data stays on this phone. <a href="#/signin">Sign in</a> to try the clinic desk with a demo staff account.</p>' : '') + h;
   if (!S.facilities.length) return h + `<div class="card empty"><h2>No facilities listed yet</h2><p class="muted">Facilities appear here once they are verified.</p></div>`;
   if (!list.length) return h + `<div class="card empty"><h2>No matches</h2><p class="muted">Try another word or choose All.</p></div>`;
   return h + `<h2>${list.length} ${list.length === 1 ? 'facility' : 'facilities'}</h2><div class="facs">${list.map((f, i) => {
@@ -178,7 +188,15 @@ function installBanner() {
 }
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); S.installEvt = e; render(); });
 window.addEventListener('appinstalled', () => { S.installEvt = null; toast('Clinic Connect is on your home screen'); });
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+if (!PREVIEW && 'serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+
+function previewNote() {
+  if (!PREVIEW) return '';
+  return `<div class="card pad stack preview-note"><b>Preview mode</b><p class="small">Everything you do is saved on this phone only. To see the clinic side, sign out and sign in with a demo account:</p>
+    <div class="stack tight small">${[['Admin', '0700000001', 'admin123'], ['Clinic staff (Example Polyclinic)', '0700000002', 'staff123']].map(([l, p, w]) => `<span><b>${l}:</b> ${p} · password ${w}</span>`).join('')}</div>
+    <div class="row">${[['0700000001', 'admin123', 'Sign in as admin'], ['0700000002', 'staff123', 'Sign in as clinic staff']].map(([p, w, l]) => `<button class="btn" data-a="demoLogin" data-v="${p}|${w}">${l}</button>`).join('')}
+    <button class="btn danger" data-a="resetPreview">Reset preview data</button></div></div>`;
+}
 
 function viewFacility() {
   const f = S.facility;
@@ -360,7 +378,7 @@ function viewAuth(mode) {
       <label class="field"><span>Password</span><input id="a_pw" type="password" class="input" data-d="auth.password" autocomplete="${signup ? 'new-password' : 'current-password'}">${signup ? '<span class="hint">At least 8 characters.</span>' : ''}</label>
       ${d.err ? `<p class="error" role="alert">${esc(d.err)}</p>` : ''}
       <button class="btn primary block" type="submit"${S.busy ? ' disabled' : ''}>${signup ? 'Create account' : 'Sign in'}</button>
-      <p class="small muted">${signup ? 'Already have an account? <a href="#/signin">Sign in</a>' : 'New here? <a href="#/signup">Create an account</a>'}</p></form></div>`;
+      <p class="small muted">${signup ? 'Already have an account? <a href="#/signin">Sign in</a>' : 'New here? <a href="#/signup">Create an account</a>'}</p></form>${previewNote()}</div>`;
 }
 
 function body() {
@@ -492,6 +510,8 @@ document.addEventListener('click', (e) => {
   const a = b.getAttribute('data-a'), v = b.getAttribute('data-v'), id = b.getAttribute('data-id');
   if (a === 'cat') { S.cat = v; render(); }
   else if (a === 'signout') signOut();
+  else if (a === 'demoLogin') { const [phone, password] = v.split('|'); run(async () => { afterAuth(await api('/api/auth/login', { method: 'POST', body: { phone, password } })); }, 'Signed in'); }
+  else if (a === 'resetPreview' && previewMod) { previewMod.resetPreview(); S.token = null; S.me = null; storage.set('cc_token', null); S.draft = {}; toast('Preview data reset'); go('#/'); }
   else if (a === 'install' && S.installEvt) { const ev = S.installEvt; S.installEvt = null; ev.prompt(); ev.userChoice.finally(render); }
   else if (a === 'hideInstall') { storage.set('cc_install_hidden', '1'); render(); }
   else if (a === 'reload') load();

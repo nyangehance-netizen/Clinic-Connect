@@ -6,3 +6,5 @@ data/
 *.db-shm
 android-app/android/
 android-app/capacitor.config.json
+android-app/www/*
+!android-app/www/offline.html
